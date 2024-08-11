@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,13 +13,17 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtPayload } from './interface/jwt-payload';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private jwtService: JwtService,
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -55,19 +60,19 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(
       {
-        id: existingUser.id,
+        sub: existingUser.id,
       },
       {
         secret: this.configService.getOrThrow<string>(
           'JWT_ACCESS_TOKEN_SECRET',
         ),
-        expiresIn: '60s',
+        expiresIn: '15m',
       },
     );
 
     const refreshToken = await this.jwtService.signAsync(
       {
-        id: existingUser.id,
+        sub: existingUser.id,
       },
       {
         expiresIn: '7d',
@@ -77,7 +82,12 @@ export class AuthService {
       },
     );
 
-    response.cookie('token', accessToken, {
+    response.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure:
+        this.configService.getOrThrow<string>('NODE_ENV') === 'production',
+    });
+    response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure:
         this.configService.getOrThrow<string>('NODE_ENV') === 'production',
@@ -87,52 +97,76 @@ export class AuthService {
   }
 
   async logout(response: Response) {
-    response.clearCookie('token');
+    response.clearCookie('accessToken');
+    response.clearCookie('refreshToken');
     return { message: 'success' };
   }
 
-  async refreshToken(params: LoginUserDto, response: Response) {
-    const { email, password } = params;
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
-
-    if (!existingUser) throw new BadRequestException('Please regitser');
-
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      existingUser.password,
+  async refreshToken(input: RefreshTokenDto, response: Response) {
+    const payload = await this.jwtService.verifyAsync<JwtPayload>(
+      input.refreshToken,
+      {
+        secret: this.configService.getOrThrow<string>(
+          'JWT_REFRESH_TOKEN_SECRET',
+        ),
+      },
     );
 
-    if (!isPasswordValid) throw new BadRequestException('Incorrect password');
-
-    const accessToken = await this.jwtService.signAsync({
-      id: existingUser.id,
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: payload.sub,
+      },
+      {
+        secret: this.configService.getOrThrow<string>(
+          'JWT_ACCESS_TOKEN_SECRET',
+        ),
+        expiresIn: '15m',
+      },
+    );
 
     const refreshToken = await this.jwtService.signAsync(
       {
-        id: existingUser.id,
+        sub: payload.sub,
       },
-      { expiresIn: '7d' },
+      {
+        expiresIn: '7d',
+        secret: this.configService.getOrThrow<string>(
+          'JWT_REFRESH_TOKEN_SECRET',
+        ),
+      },
     );
 
-    response.cookie('token', accessToken, { httpOnly: true });
-    return { refreshToken };
+    response.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure:
+        this.configService.getOrThrow<string>('NODE_ENV') === 'production',
+    });
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure:
+        this.configService.getOrThrow<string>('NODE_ENV') === 'production',
+    });
+
+    return { accessToken, refreshToken };
   }
 
   async getUser(request: Request) {
     try {
-      const cookie = request.cookies['token'];
-      const data = await this.jwtService.verifyAsync(cookie);
-      if (!data) throw new UnauthorizedException();
+      const cookie = request.cookies['accessToken'];
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(cookie, {
+        secret: this.configService.getOrThrow<string>(
+          'JWT_ACCESS_TOKEN_SECRET',
+        ),
+      });
+      if (!payload) throw new UnauthorizedException();
 
       const user = await this.userRepository.findOne({
-        where: { id: data['id'] },
+        where: { id: payload.sub },
       });
 
-      return user;
+      return instanceToPlain(user);
     } catch (e) {
+      this.logger.error(e);
       throw new UnauthorizedException();
     }
   }

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login_user.dto';
 import { CreateUserDto } from './dto/create_user.dto';
 import { Response, Request } from 'express';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,10 +29,10 @@ export class AuthController {
 
   @Post('refresh')
   async refreshToken(
-    @Body() loginUser: LoginUserDto,
+    @Body() input: RefreshTokenDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.refreshToken(loginUser, response);
+    return this.authService.refreshToken(input, response);
   }
 
   @Get('user')

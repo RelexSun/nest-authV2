@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import {
   BaseEntity,
   Column,
@@ -30,7 +30,7 @@ export class User extends BaseEntity {
     type: 'varchar',
     length: 225,
   })
-  @Expose()
+  @Exclude()
   password: string;
 
   @CreateDateColumn({
