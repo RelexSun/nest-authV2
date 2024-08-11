@@ -11,6 +11,7 @@ import { LoginUserDto } from './dto/login_user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(params: CreateUserDto): Promise<User> {
@@ -41,33 +43,51 @@ export class AuthService {
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
+
     if (!existingUser) throw new BadRequestException('Please register');
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      (await existingUser).password,
+      existingUser.password,
     );
 
     if (!isPasswordValid) throw new BadRequestException('Incorrect password');
 
-    const accessToken = await this.jwtService.signAsync({
-      id: existingUser.id,
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        id: existingUser.id,
+      },
+      {
+        secret: this.configService.getOrThrow<string>(
+          'JWT_ACCESS_TOKEN_SECRET',
+        ),
+        expiresIn: '60s',
+      },
+    );
 
     const refreshToken = await this.jwtService.signAsync(
       {
         id: existingUser.id,
       },
-      { expiresIn: '7d' },
+      {
+        expiresIn: '7d',
+        secret: this.configService.getOrThrow<string>(
+          'JWT_REFRESH_TOKEN_SECRET',
+        ),
+      },
     );
 
-    response.cookie('jwt', accessToken, { httpOnly: true });
+    response.cookie('token', accessToken, {
+      httpOnly: true,
+      secure:
+        this.configService.getOrThrow<string>('NODE_ENV') === 'production',
+    });
 
     return { accessToken, refreshToken };
   }
 
   async logout(response: Response) {
-    response.clearCookie('jwt');
+    response.clearCookie('token');
     return { message: 'success' };
   }
 
@@ -81,7 +101,7 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(
       password,
-      (await existingUser).password,
+      existingUser.password,
     );
 
     if (!isPasswordValid) throw new BadRequestException('Incorrect password');
@@ -97,13 +117,13 @@ export class AuthService {
       { expiresIn: '7d' },
     );
 
-    response.cookie('jwt', accessToken, { httpOnly: true });
+    response.cookie('token', accessToken, { httpOnly: true });
     return { refreshToken };
   }
 
   async getUser(request: Request) {
     try {
-      const cookie = request.cookies['jwt'];
+      const cookie = request.cookies['token'];
       const data = await this.jwtService.verifyAsync(cookie);
       if (!data) throw new UnauthorizedException();
 
@@ -111,8 +131,7 @@ export class AuthService {
         where: { id: data['id'] },
       });
 
-      const { password, ...result } = user;
-      return result;
+      return user;
     } catch (e) {
       throw new UnauthorizedException();
     }
