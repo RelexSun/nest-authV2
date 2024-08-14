@@ -1,24 +1,21 @@
-import { Exclude } from 'class-transformer';
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Exclude, Expose } from 'class-transformer';
+import { BaseEntity } from 'src/common/entities';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
 export class User extends BaseEntity {
+  @Expose()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Expose()
   @Column({
     type: 'varchar',
     length: 225,
   })
   email: string;
 
+  @Expose()
   @Column({
     type: 'varchar',
     length: 225,
@@ -26,20 +23,10 @@ export class User extends BaseEntity {
   })
   username: string;
 
+  @Exclude()
   @Column({
     type: 'varchar',
     length: 225,
   })
-  @Exclude()
   password: string;
-
-  @CreateDateColumn({
-    type: 'timestamp',
-  })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-  })
-  updatedAt: Date;
 }

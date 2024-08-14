@@ -15,7 +15,6 @@ import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtPayload } from './interface/jwt-payload';
-import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -164,7 +163,7 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      return instanceToPlain(user);
+      return user;
     } catch (e) {
       this.logger.error(e);
       throw new UnauthorizedException();

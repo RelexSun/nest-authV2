@@ -4,6 +4,8 @@ import { LoginUserDto } from './dto/login_user.dto';
 import { CreateUserDto } from './dto/create_user.dto';
 import { Response, Request } from 'express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { Serialize } from 'src/common/decorators';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +21,7 @@ export class AuthController {
     @Body() loginUserDto: LoginUserDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.login(loginUserDto, response);
+    return await this.authService.login(loginUserDto, response);
   }
 
   @Post('logout')
@@ -32,11 +34,12 @@ export class AuthController {
     @Body() input: RefreshTokenDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    return this.authService.refreshToken(input, response);
+    return await this.authService.refreshToken(input, response);
   }
 
   @Get('user')
+  @Serialize(User)
   async getUser(@Req() request: Request) {
-    return this.authService.getUser(request);
+    return await this.authService.getUser(request);
   }
 }
