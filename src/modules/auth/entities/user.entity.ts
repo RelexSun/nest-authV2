@@ -1,6 +1,14 @@
 import { Exclude, Expose } from 'class-transformer';
 import { BaseEntity } from 'src/common/entities';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Shop } from 'src/modules/shops/entities/shop.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -29,4 +37,13 @@ export class User extends BaseEntity {
     length: 225,
   })
   password: string;
+
+  @OneToMany(() => Shop, (shop) => shop.user)
+  shops: Shop[];
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }

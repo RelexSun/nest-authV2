@@ -165,7 +165,6 @@ export class AuthService {
 
       return user;
     } catch (e) {
-      this.logger.error(e);
       throw new UnauthorizedException();
     }
   }

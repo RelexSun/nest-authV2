@@ -3,6 +3,7 @@ import { DatabaseService } from './database.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '../auth/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Shop } from '../shops/entities/shop.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         password: configService.getOrThrow<string>('DATABASE_PASSWORD'),
         database: configService.getOrThrow<string>('DATABASE_NAME'),
         autoLoadEntities: true,
-        entities: [User],
+        entities: [User, Shop],
         synchronize: true,
       }),
       inject: [ConfigService],

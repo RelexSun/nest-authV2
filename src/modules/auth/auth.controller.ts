@@ -6,7 +6,9 @@ import { Response, Request } from 'express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Serialize } from 'src/common/decorators';
 import { User } from './entities/user.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
