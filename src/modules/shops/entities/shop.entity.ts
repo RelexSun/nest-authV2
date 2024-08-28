@@ -1,17 +1,16 @@
 import { User } from 'src/modules/auth/entities/user.entity';
+import { BaseEntity } from 'src/common/entities';
 
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('shops')
-export class Shop {
+export class Shop extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -33,14 +32,4 @@ export class Shop {
 
   @Column()
   table: number;
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
-
-  constructor(shop: Partial<Shop>) {
-    Object.assign(this, shop);
-  }
 }
