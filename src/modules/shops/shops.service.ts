@@ -19,24 +19,35 @@ export class ShopsService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(body: CreateShopDTO): Promise<Shop> {
+  async create(body: CreateShopDTO): Promise<Shop[]> {
     const { user_id, name, location, table } = body;
 
-    const user = await this.userRepository.findOne({ where: { id: user_id } });
+    const user = await this.userRepository.findOne({
+      where: { id: user_id },
+      relations: ['shops'],
+    });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${user_id} not found`);
     }
-
-    return await this.shopRepository.save({
+    const newShop = await this.shopRepository.create({
       user,
       name,
       location,
       table,
     });
+
+    await this.shopRepository.save(newShop);
+
+    const updatedUser = await this.userRepository.findOne({
+      where: { id: user_id },
+      relations: ['shops'],
+    });
+
+    return updatedUser.shops;
   }
 
-  async getById(id: string): Promise<Shop[]> {
+  async getById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['shops'],
@@ -46,7 +57,7 @@ export class ShopsService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user.shops;
+    return user;
   }
 
   async deleteById(userId: string, shopId: string): Promise<Shop> {
@@ -77,27 +88,23 @@ export class ShopsService {
       where: { id: userId },
       relations: ['shops'],
     });
-
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
+
     const shop = await this.shopRepository.findOne({
       where: { id: shopId },
     });
     if (!shop) {
       throw new NotFoundException(`Shop with ID ${shopId} not found`);
     }
+
     const { name, location, table } = body;
 
     if (!name && !location && table === undefined) {
       throw new BadRequestException('No fields provided to update.');
     }
-    await this.shopRepository.update(shopId, {
-      name,
-      location,
-      table,
-    });
-
+    await this.shopRepository.update(shop.id, { name, location, table });
     return await this.shopRepository.findOne({
       where: { id: shopId },
     });
