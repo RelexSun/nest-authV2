@@ -19,7 +19,7 @@ export class ShopsService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(body: CreateShopDTO): Promise<Shop[]> {
+  async create(body: CreateShopDTO): Promise<Shop> {
     const { user_id, name, location, table } = body;
 
     const user = await this.userRepository.findOne({
@@ -30,21 +30,14 @@ export class ShopsService {
     if (!user) {
       throw new NotFoundException(`User with ID ${user_id} not found`);
     }
-    const newShop = await this.shopRepository.create({
+    const newShop = this.shopRepository.create({
       user,
       name,
       location,
       table,
     });
 
-    await this.shopRepository.save(newShop);
-
-    const updatedUser = await this.userRepository.findOne({
-      where: { id: user_id },
-      relations: ['shops'],
-    });
-
-    return updatedUser.shops;
+    return await this.shopRepository.save(newShop);
   }
 
   async getById(id: string): Promise<User> {

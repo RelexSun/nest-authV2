@@ -1,35 +1,30 @@
 import { User } from 'src/modules/auth/entities/user.entity';
 import { BaseEntity } from 'src/common/entities';
 
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity('shops')
 export class Shop extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+  @Exclude()
   @ManyToOne(() => User, (user) => user.shops, { onDelete: 'CASCADE' })
-  @JoinColumn()
-  user = User;
+  user: User;
 
+  @Expose()
   @Column({
     type: 'varchar',
     length: 225,
   })
   name: string;
 
+  @Expose()
   @Column({
     type: 'varchar',
     length: 225,
   })
   location: string;
 
+  @Expose()
   @Column()
   table: number;
 }
