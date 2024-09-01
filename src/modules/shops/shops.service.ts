@@ -20,7 +20,7 @@ export class ShopsService {
   ) {}
 
   async create(body: CreateShopDTO): Promise<Shop[]> {
-    const { user_id, name, location, table } = body;
+    const { user_id, name, location } = body;
 
     const user = await this.userRepository.findOne({
       where: { id: user_id },
@@ -30,15 +30,12 @@ export class ShopsService {
     if (!user) {
       throw new NotFoundException(`User with ID ${user_id} not found`);
     }
-    const newShop = await this.shopRepository.create({
+    const newShop = this.shopRepository.create({
       user,
       name,
       location,
-      table,
     });
-
     await this.shopRepository.save(newShop);
-
     const updatedUser = await this.userRepository.findOne({
       where: { id: user_id },
       relations: ['shops'],
@@ -47,7 +44,7 @@ export class ShopsService {
     return updatedUser.shops;
   }
 
-  async getById(id: string): Promise<User> {
+  async getById(id: string): Promise<Shop[]> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['shops'],
@@ -57,7 +54,7 @@ export class ShopsService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user;
+    return user.shops;
   }
 
   async deleteById(userId: string, shopId: string): Promise<Shop> {
@@ -99,12 +96,12 @@ export class ShopsService {
       throw new NotFoundException(`Shop with ID ${shopId} not found`);
     }
 
-    const { name, location, table } = body;
+    const { name, location } = body;
 
-    if (!name && !location && table === undefined) {
+    if (!name && !location) {
       throw new BadRequestException('No fields provided to update.');
     }
-    await this.shopRepository.update(shop.id, { name, location, table });
+    await this.shopRepository.update(shop.id, { name, location });
     return await this.shopRepository.findOne({
       where: { id: shopId },
     });

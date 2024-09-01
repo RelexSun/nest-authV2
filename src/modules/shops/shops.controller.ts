@@ -11,6 +11,8 @@ import { ShopsService } from './shops.service';
 import { CreateShopDTO } from './dto/create_shop.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateShopDTO } from './dto/update_shop.dto';
+import { Serialize } from 'src/common/decorators';
+import { Shop } from './entities/shop.entity';
 
 @ApiTags('shop')
 @Controller('shops')
@@ -18,6 +20,7 @@ export class ShopsController {
   constructor(private readonly shopService: ShopsService) {}
 
   @Post('create')
+  @Serialize(Shop)
   async createShop(@Body() createShopDto: CreateShopDTO) {
     return await this.shopService.create(createShopDto);
   }

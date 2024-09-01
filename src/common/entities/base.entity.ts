@@ -14,12 +14,14 @@ export abstract class BaseEntity extends _BaseEntity {
   @Expose()
   @CreateDateColumn({
     type: 'timestamp',
+    name: 'created_at',
   })
   createdAt: Date;
 
   @Expose()
   @UpdateDateColumn({
     type: 'timestamp',
+    name: 'updated_at',
   })
   updatedAt: Date;
 }

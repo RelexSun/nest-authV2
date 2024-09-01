@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class CreateShopDTO {
   @IsNotEmpty()
@@ -13,9 +13,6 @@ export class CreateShopDTO {
   location: string;
 
   @IsNotEmpty()
+  @IsString()
   user_id: string;
-
-  @IsInt()
-  @IsNotEmpty()
-  table: number;
 }
