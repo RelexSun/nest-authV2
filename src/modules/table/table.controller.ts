@@ -19,6 +19,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { UpdateStatusDTO } from './dto/update_status.dto';
+import { Serialize } from 'src/common/decorators';
+import { Table } from './entities/table.entity';
 
 @ApiTags('table')
 @Controller('table')
@@ -35,6 +37,7 @@ export class TableController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
+  @Serialize(Table)
   async create(@Body() body: CreateTableDTO) {
     return await this.tableService.createTable(body);
   }

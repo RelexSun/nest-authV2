@@ -21,14 +21,14 @@ export class TableService {
     private readonly tableRepository: Repository<Table>,
   ) {}
 
-  async createTable(@Body() body: CreateTableDTO): Promise<Table[]> {
+  async createTable(@Body() body: CreateTableDTO): Promise<Table> {
     const { shop_id, number, seatAmount } = body;
     const shop = await this.shopRepository.findOne({
       where: { id: shop_id },
       relations: ['tables'],
     });
     if (!shop) {
-      throw new NotFoundException(`User with ID ${shop_id} not found`);
+      throw new NotFoundException(`Shop with ID ${shop_id} not found`);
     }
 
     const table = this.tableRepository.create({
@@ -36,14 +36,7 @@ export class TableService {
       number,
       seatAmount,
     });
-    await this.tableRepository.save(table);
-
-    const updatedShop = await this.shopRepository.findOne({
-      where: { id: shop_id },
-      relations: ['tables'],
-    });
-
-    return updatedShop.tables;
+    return await this.tableRepository.save(table);
   }
 
   async getById(id: string): Promise<Table[]> {

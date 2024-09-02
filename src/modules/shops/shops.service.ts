@@ -19,7 +19,7 @@ export class ShopsService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(body: CreateShopDTO): Promise<Shop[]> {
+  async create(body: CreateShopDTO): Promise<Shop> {
     const { user_id, name, location } = body;
 
     const user = await this.userRepository.findOne({
@@ -35,13 +35,7 @@ export class ShopsService {
       name,
       location,
     });
-    await this.shopRepository.save(newShop);
-    const updatedUser = await this.userRepository.findOne({
-      where: { id: user_id },
-      relations: ['shops'],
-    });
-
-    return updatedUser.shops;
+    return await this.shopRepository.save(newShop);
   }
 
   async getById(id: string): Promise<Shop[]> {
