@@ -1,4 +1,6 @@
+import { CloudinaryService } from './../cloudinary/cloudinary.service';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,6 +8,8 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDTO } from './dto/create_shop.dto';
@@ -20,11 +24,15 @@ import {
 import { UpdateShopDTO } from './dto/update_shop.dto';
 import { Serialize } from 'src/common/decorators';
 import { Shop } from './entities/shop.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('shop')
 @Controller('shops')
 export class ShopsController {
-  constructor(private readonly shopService: ShopsService) {}
+  constructor(
+    private readonly shopService: ShopsService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Post('create')
   @ApiOperation({ summary: 'Create shop' })
@@ -78,5 +86,13 @@ export class ShopsController {
     @Body() updateShopDto: UpdateShopDTO,
   ) {
     return await this.shopService.updateById(userId, shopId, updateShopDto);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return await this.cloudinaryService.uploadImage(file).catch(() => {
+      throw new BadRequestException('Invalid file type.');
+    });
   }
 }
