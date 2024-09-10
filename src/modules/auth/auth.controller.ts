@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Req, Res } from '@nestjs/common';
+import { Body, Controller, Post, Get, Req, Res, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login_user.dto';
 import { CreateUserDto } from './dto/create_user.dto';
@@ -14,6 +14,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update_user.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -81,5 +82,17 @@ export class AuthController {
   @Serialize(User)
   async getUser(@Req() request: Request) {
     return await this.authService.getUser(request);
+  }
+
+  @ApiOperation({
+    summary: 'Update current user information using token in cookies',
+  })
+  @ApiOkResponse({
+    description: 'Success',
+  })
+  @ApiNotFoundResponse({ description: 'Failed' })
+  @Patch('update')
+  async updateUser(@Req() request: Request, @Body() body: UpdateUserDto) {
+    return this.authService.update(request, body);
   }
 }

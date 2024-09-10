@@ -15,6 +15,7 @@ import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtPayload } from './interface/jwt-payload';
+import { UpdateUserDto } from './dto/update_user.dto';
 
 @Injectable()
 export class AuthService {
@@ -164,6 +165,34 @@ export class AuthService {
       });
 
       return user;
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async update(request: Request, body: UpdateUserDto) {
+    try {
+      const cookie = request.cookies['accessToken'];
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(cookie, {
+        secret: this.configService.getOrThrow<string>(
+          'JWT_ACCESS_TOKEN_SECRET',
+        ),
+      });
+      if (!payload) throw new UnauthorizedException();
+
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      const { username, age, gender, phone_number, DOB } = body;
+      await this.userRepository.update(user.id, {
+        username,
+        age,
+        gender,
+        phone_number,
+        DOB,
+      });
+      return { message: 'User updated successfully' };
     } catch (e) {
       throw new UnauthorizedException();
     }
