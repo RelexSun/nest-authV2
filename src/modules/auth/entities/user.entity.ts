@@ -2,7 +2,13 @@ import { Exclude, Expose } from 'class-transformer';
 import { BaseEntity } from 'src/common/entities';
 import { GENDER } from 'src/common/enums/gender';
 import { Shop } from 'src/modules/shops/entities/shop.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+} from 'typeorm';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -16,6 +22,20 @@ export class User extends BaseEntity {
     length: 225,
   })
   email: string;
+
+  @Expose()
+  @Column({
+    type: 'varchar',
+    length: 225,
+  })
+  lastname: string;
+
+  @Expose()
+  @Column({
+    type: 'varchar',
+    length: 225,
+  })
+  firstname: string;
 
   @Expose()
   @Column({
@@ -56,8 +76,8 @@ export class User extends BaseEntity {
 
   @Expose()
   @Column({
-    type: Date,
+    type: 'timestamp',
     nullable: true,
   })
-  DOB: Date;
+  dob: Timestamp;
 }

@@ -15,7 +15,7 @@ import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtPayload } from './interface/jwt-payload';
-import { UpdateUserDto } from './dto/update_user.dto';
+import { UpdateDTO } from './dto/update_user.dto';
 
 @Injectable()
 export class AuthService {
@@ -170,7 +170,7 @@ export class AuthService {
     }
   }
 
-  async update(request: Request, body: UpdateUserDto) {
+  async update(request: Request, body: UpdateDTO) {
     try {
       const cookie = request.cookies['accessToken'];
       const payload = await this.jwtService.verifyAsync<JwtPayload>(cookie, {
@@ -184,13 +184,16 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      const { username, age, gender, phone_number, DOB } = body;
+      const { username, lastname, firstname, phone_number, age, gender, dob } =
+        body;
       await this.userRepository.update(user.id, {
         username,
-        age,
-        gender,
+        lastname,
+        firstname,
         phone_number,
-        DOB,
+        gender,
+        age,
+        dob,
       });
       return { message: 'User updated successfully' };
     } catch (e) {

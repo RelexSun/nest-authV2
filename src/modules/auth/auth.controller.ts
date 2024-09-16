@@ -4,6 +4,7 @@ import { LoginUserDto } from './dto/login_user.dto';
 import { CreateUserDto } from './dto/create_user.dto';
 import { Response, Request } from 'express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { UpdateDTO } from './dto/update_user.dto';
 import { Serialize } from 'src/common/decorators';
 import { User } from './entities/user.entity';
 import {
@@ -14,7 +15,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UpdateUserDto } from './dto/update_user.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -92,7 +92,7 @@ export class AuthController {
   })
   @ApiNotFoundResponse({ description: 'Failed' })
   @Patch('update')
-  async updateUser(@Req() request: Request, @Body() body: UpdateUserDto) {
+  async updateUser(@Req() request: Request, @Body() body: UpdateDTO) {
     return this.authService.update(request, body);
   }
 }
