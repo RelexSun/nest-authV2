@@ -184,16 +184,8 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      const { username, lastname, firstname, phone_number, age, gender, dob } =
-        body;
       await this.userRepository.update(user.id, {
-        username,
-        lastname,
-        firstname,
-        phone_number,
-        gender,
-        age,
-        dob,
+        ...body,
       });
       return { message: 'User updated successfully' };
     } catch (e) {
