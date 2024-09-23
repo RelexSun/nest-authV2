@@ -1,6 +1,5 @@
 import { User } from 'src/modules/auth/entities/user.entity';
 import { BaseEntity } from 'src/common/entities';
-
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Table } from 'src/modules/table/entities/table.entity';
 import { Exclude, Expose } from 'class-transformer';

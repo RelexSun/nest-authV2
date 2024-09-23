@@ -61,7 +61,7 @@ export class ShopsController {
     return await this.shopService.getById(id);
   }
 
-  @Delete(':id/:id')
+  @Delete(':userId/:shopId')
   @ApiOperation({ summary: 'Delete shop by user id' })
   @ApiOkResponse({
     description: 'Shop found',
@@ -74,7 +74,7 @@ export class ShopsController {
     return await this.shopService.deleteById(userId, shopId);
   }
 
-  @Patch(':id/:id')
+  @Patch(':userId/:shopId')
   @ApiOperation({ summary: 'Update shop by user id' })
   @ApiOkResponse({
     description: 'Shop found',

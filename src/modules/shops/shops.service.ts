@@ -63,6 +63,7 @@ export class ShopsService {
     const shop = await this.shopRepository.findOne({
       where: { id: shopId },
     });
+
     if (!shop) {
       throw new NotFoundException(`Shop with ID ${shopId} not found`);
     }
