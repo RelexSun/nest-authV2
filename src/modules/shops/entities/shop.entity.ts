@@ -25,6 +25,13 @@ export class Shop extends BaseEntity {
   location: string;
 
   @Expose()
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  img_url: string;
+
+  @Expose()
   @OneToMany(() => Table, (table) => table.shop)
   tables: Table[];
 }

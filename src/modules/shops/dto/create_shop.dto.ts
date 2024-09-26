@@ -22,4 +22,8 @@ export class CreateShopDTO {
   @IsNotEmpty()
   @IsString()
   user_id: string;
+
+  @ApiProperty({ description: 'image of the shop' })
+  @IsString()
+  img_url: string;
 }

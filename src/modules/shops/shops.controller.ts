@@ -44,8 +44,8 @@ export class ShopsController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  @Post('create')
   @Serialize(Shop)
+  @UseInterceptors(FileInterceptor('image'))
   async createShop(@Body() createShopDto: CreateShopDTO) {
     return await this.shopService.create(createShopDto);
   }
