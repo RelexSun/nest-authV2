@@ -18,7 +18,6 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { UpdateStatusDTO } from './dto/update_status.dto';
 import { Serialize } from 'src/common/decorators';
 import { Table } from './entities/table.entity';
 
@@ -79,20 +78,5 @@ export class TableController {
     @Body() body: UpdateTableDTO,
   ) {
     return await this.tableService.updateTable(shop_id, table_id, body);
-  }
-
-  @Patch('status/:shop_id/:table_id')
-  @ApiOperation({ summary: 'Update status of a table' })
-  @ApiOkResponse({
-    description: 'Update successfully',
-    type: UpdateStatusDTO,
-  })
-  @ApiNotFoundResponse({ description: 'Update failed ' })
-  async status(
-    @Param('shop_id') shop_id: string,
-    @Param('table_id') table_id: string,
-    @Body() body: UpdateStatusDTO,
-  ) {
-    return await this.tableService.updateStatus(shop_id, table_id, body);
   }
 }

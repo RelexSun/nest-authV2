@@ -1,16 +1,10 @@
-import {
-  BadRequestException,
-  Body,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Body, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Shop } from '../shops/entities/shop.entity';
 import { Repository } from 'typeorm';
 import { Table } from './entities/table.entity';
 import { CreateTableDTO } from './dto/create_table.dto';
 import { UpdateTableDTO } from './dto/update_table.dto';
-import { UpdateStatusDTO } from './dto/update_status.dto';
 
 @Injectable()
 export class TableService {
@@ -22,7 +16,7 @@ export class TableService {
   ) {}
 
   async createTable(@Body() body: CreateTableDTO): Promise<Table> {
-    const { shop_id, number, seatAmount } = body;
+    const { shop_id } = body;
     const shop = await this.shopRepository.findOne({
       where: { id: shop_id },
       relations: ['tables'],
@@ -33,8 +27,7 @@ export class TableService {
 
     const table = this.tableRepository.create({
       shop,
-      number,
-      seatAmount,
+      ...body,
     });
     return await this.tableRepository.save(table);
   }
@@ -92,43 +85,7 @@ export class TableService {
     if (!table) {
       throw new NotFoundException(`Table with ID ${table_id} not found`);
     }
-
-    const { number, seatAmount } = body;
-    if (number === undefined && seatAmount === undefined) {
-      throw new BadRequestException('No fields provided to update.');
-    }
     await this.tableRepository.update(table.id, { ...body });
     return await this.tableRepository.findOne({ where: { id: table_id } });
-  }
-
-  async updateStatus(
-    shop_id: string,
-    table_id: string,
-    @Body() body: UpdateStatusDTO,
-  ) {
-    const shop = await this.shopRepository.findOne({
-      where: { id: shop_id },
-      relations: ['tables'],
-    });
-
-    if (!shop) {
-      throw new NotFoundException(`Shop with ID ${shop_id} not found`);
-    }
-
-    const table = await this.tableRepository.findOne({
-      where: { id: table_id },
-    });
-
-    if (!table) {
-      throw new NotFoundException(`Table with ID ${table_id} not found`);
-    }
-    const { status } = body;
-
-    await this.tableRepository.update(table.id, {
-      ...table,
-      status,
-    });
-
-    return { message: 'success' };
   }
 }
