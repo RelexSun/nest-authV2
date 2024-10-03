@@ -20,7 +20,7 @@ export class ShopsService {
   ) {}
 
   async create(body: CreateShopDTO): Promise<Shop> {
-    const { user_id, name, location } = body;
+    const { user_id, name, location, img_url } = body;
 
     const user = await this.userRepository.findOne({
       where: { id: user_id },
@@ -30,10 +30,11 @@ export class ShopsService {
     if (!user) {
       throw new NotFoundException(`User with ID ${user_id} not found`);
     }
-    const newShop = this.shopRepository.create({
+    const newShop = await this.shopRepository.create({
       user,
       name,
       location,
+      img_url,
     });
     return await this.shopRepository.save(newShop);
   }

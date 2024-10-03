@@ -45,7 +45,6 @@ export class ShopsController {
     description: 'Invalid data',
   })
   @Serialize(Shop)
-  @UseInterceptors(FileInterceptor('image'))
   async createShop(@Body() createShopDto: CreateShopDTO) {
     return await this.shopService.create(createShopDto);
   }
